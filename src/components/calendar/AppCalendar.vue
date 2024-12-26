@@ -2,8 +2,9 @@
   setup
   lang="ts"
 >
-  import { VCalendar } from 'vuetify/labs/VCalendar'
   import kanmusuList from '@/assets/kcbirthday.json'
+  import { Ref } from 'vue'
+  import { Dayjs } from 'dayjs'
 
   type Event = {
     title: string | null,
@@ -11,11 +12,36 @@
     start: Date | null,
     end: Date | null,
     color: any,
-    img: string|null
+    img: any
+  }
+
+  export type CalendarEvent = {
+    title: string,
+    day: number|null,
+    month: number|null,
+    year: number|null,
+    img: any
+  }
+
+  export type WeekItem = {
+    day: Dayjs,
+    events: Array<CalendarEvent>
+  }
+
+  export type MonthDays = {
+    date: Date|string,
+    isCurrentMonth: boolean,
+  }
+
+  export type MonthDaysWithEvents = {
+    date: Date | string,
+    isCurrentMonth: boolean,
+    events: Array<CalendarEvent>
   }
 
   const date = ref([new Date()])
   const events = ref<Array<Event>>([])
+  const calendarEvents:Ref<Array<CalendarEvent>> = ref([])
   const imgUrls = import.meta.glob('@/assets/icons/calendar/*.png', {
     import: 'default',
     eager: true,
@@ -42,8 +68,28 @@
     })
   }
 
-  onMounted(() => {
+  function createCalendarEvents () {
+    calendarEvents.value = []
+    kanmusuList.forEach(item => {
+      const cEvent:CalendarEvent = {
+        title: item.name,
+        day: item.day,
+        month: item.month,
+        year: item.year,
+        img: null,
+      }
+      if (imgUrls.hasOwnProperty(`/src/assets/icons/calendar/${item.name}.png`)) {
+        cEvent.img = imgUrls[`/src/assets/icons/calendar/${item.name}.png`]
+      } else {
+        cEvent.img = imgUrls[`/src/assets/icons/calendar/_rensouhou.png`]
+      }
+      calendarEvents.value?.push(cEvent)
+    })
+  }
+
+  onBeforeMount(() => {
     createEvents()
+    createCalendarEvents()
   })
   watch(date, () => {
     createEvents()
@@ -51,22 +97,10 @@
 
 </script>
 <template>
-  <VContainer>
+  <div class="pa-6">
     <h1>Kanmusu birthday</h1>
-    <VCalendar
-      v-model="date"
-      :events="events"
-    >
-      <template #event="{event}">
-        <VCard class="d-flex align-center px-2 pb-1" variant="text">
-          <VAvatar size="64">
-            <VImg :src="event.img" />
-          </VAvatar>
-          <VCardTitle class="flex-shrink-1">{{ event.title }}</VCardTitle>
-        </VCard>
-      </template>
-    </VCalendar>
-  </VContainer>
+    <TheCalendar :calendar-events="calendarEvents" />
+  </div>
 </template>
 <style scoped>
 </style>

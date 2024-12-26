@@ -8,3 +8,11 @@
 // @use 'vuetify/settings' with (
 //   $color-pack: false
 // );
+ol, li {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+body {
+	box-sizing: content-box;
+}

@@ -8,8 +8,14 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppCalendar: typeof import('./components/calendar/AppCalendar.vue')['default']
+    CalendarHeader: typeof import('./components/thecalendar/CalendarHeader.vue')['default']
+    CalendarHeaderMobile: typeof import('./components/thecalendar/CalendarHeaderMobile.vue')['default']
+    CalendarMonthDayItem: typeof import('./components/thecalendar/CalendarMonthDayItem.vue')['default']
+    CalendarWeekdays: typeof import('./components/thecalendar/CalendarWeekdays.vue')['default']
+    CalendarWeekdaysMobile: typeof import('./components/thecalendar/CalendarWeekdaysMobile.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TheCalendar: typeof import('./components/thecalendar/TheCalendar.vue')['default']
     TheFooter: typeof import('./components/TheFooter.vue')['default']
     TheHeader: typeof import('./components/TheHeader.vue')['default']
   }

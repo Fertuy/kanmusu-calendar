@@ -5,11 +5,11 @@ import Fonts from 'unplugin-fonts/vite'
 import Layouts from 'vite-plugin-vue-layouts-next'
 import Vue from '@vitejs/plugin-vue'
 import VueRouter from 'unplugin-vue-router/vite'
-import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import Vuetify, {transformAssetUrls} from 'vite-plugin-vuetify'
 
 // Utilities
-import { defineConfig } from 'vite'
-import { fileURLToPath, URL } from 'node:url'
+import {defineConfig} from 'vite'
+import {fileURLToPath, URL} from 'node:url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -36,7 +36,7 @@ export default defineConfig({
       dts: 'src/components.d.ts',
     }),
     Vue({
-      template: { transformAssetUrls },
+      template: {transformAssetUrls},
     }),
     // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
     Vuetify({
@@ -47,14 +47,14 @@ export default defineConfig({
     }),
     Fonts({
       google: {
-        families: [ {
+        families: [{
           name: 'Roboto',
           styles: 'wght@100;300;400;500;700;900',
         }],
       },
     }),
   ],
-  define: { 'process.env': {} },
+  define: {'process.env': {}},
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -72,4 +72,18 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        sanitizeFileName: (name) => {
+          // Sanitizes file names generated during the build process:
+          // - Replaces spaces with dashes ('-').
+          // - Removes invalid characters that are not alphanumeric, underscores (_), periods (.), or dashes (-).
+          return name
+            .replace(/\s+/g, '-') // Replaces spaces with dashes.
+            .replace(/[^a-zA-Z0-9_.-]/g, ''); // Removes all invalid characters.
+        }
+      }
+    }
+  }
 })

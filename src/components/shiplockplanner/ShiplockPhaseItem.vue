@@ -14,7 +14,7 @@
 
   const isEditing = ref(false)
   const { tags } = storeToRefs(useShiplist())
-  const { setShipTag, doFilter, deletePhase } = useShiplist()
+  const { setShipTag, doFilter, deletePhase, removeShipFromPhase } = useShiplist()
 
   const onDrop = (event:any) => {
     const data = JSON.parse(event.dataTransfer.getData('text/plain'))
@@ -57,6 +57,12 @@
   function dPhase () {
     deletePhase(props.phase)
   }
+
+  function removeShip (shipId:number) {
+    const phaseId = props.phase.id
+    removeShipFromPhase(phaseId, shipId)
+  }
+
 </script>
 <template>
   <VCard class="phase-item">
@@ -135,7 +141,7 @@
           <div class="d-flex pl-5">
             <VCardText
               v-if="localPhase.description.length>0&&!isEditing"
-              class="description-text pl-0"
+              class="description-text pl-0 pt-0"
             > {{ localPhase.description }}
             </VCardText>
             <div v-if="localPhase.allowedTags.length>0&&!isEditing">
@@ -190,6 +196,7 @@
         v-for="ship in phase.ships"
         :key="ship.uniqueId"
         class="ship-card"
+        :remove-btn="removeShip"
         :ship="ship"
       />
     </div>

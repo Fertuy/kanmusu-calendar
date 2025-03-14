@@ -3,22 +3,40 @@
   lang="ts"
 >
   import { Kanmusu, useShiplist } from '@/stores/shiplist'
+  import { PropType } from 'vue'
+  const imgUrls = import.meta.glob('@/assets/icons/shiplock/*.png', {
+    import: 'default',
+    eager: true,
+  })
 
   const EQUIP_ICON_SIZE = 34
   const { showShipType } = useShiplist()
 
   const props = defineProps({
-    ship: { type: Object, required: true },
+    ship: { type: Object as PropType<Kanmusu>, required: true },
+    removeBtn: { type: Function },
   })
+
   const onDragStart = (event: any, item: Kanmusu) => {
     event.dataTransfer.setData('text/plain', JSON.stringify(item))
   }
 
   const style = computed(() => ({
-    backgroundColor: props.ship.tag.color !== '' ? props.ship.tag.color : '',
+    backgroundColor: typeof props.ship.tag !== 'string' &&
+      props.ship.tag.color !== '' ? props.ship.tag.color : '',
   }))
 
-  const imgUrl = `/kanmusu-calendar/src/assets/icons/shiplock/${props.ship?.id}.png`
+  const sImg = ref()
+
+  setImg(props.ship)
+
+  function setImg (ship:Kanmusu) {
+    if (imgUrls.hasOwnProperty(`/src/assets/icons/shiplock/${ship.id}.png`)) {
+      sImg.value = imgUrls[`/src/assets/icons/shiplock/${ship.id}.png`]
+    }
+    return ''
+  }
+
 </script>
 <template>
   <VCard
@@ -30,7 +48,8 @@
       rounded
       size="86"
     >
-      <VImg :src="imgUrl" />
+      <!--      <VImg :src="`@/assets/icons/shiplock/${props.ship.id}.png`" />-->
+      <VImg :src="sImg" />
     </VAvatar>
     <div class="d-flex flex-column align-start">
       <div class="d-flex">
@@ -68,6 +87,15 @@
         />
       </div>
     </div>
+    <VBtn
+      v-if="typeof removeBtn !== 'undefined'"
+      class="pa-0 pt-1 pr-1 ma-0 remove"
+      icon
+      variant="text"
+      @click="removeBtn(ship.id)"
+    >
+      <VIcon color="red" icon="mdi-close-circle-outline" size="30" />
+    </VBtn>
     <div
       class="tag"
       :class="{'tag-color':!ship.tag}"
@@ -79,6 +107,13 @@
   scoped
   lang="scss"
 >
+.remove {
+  width: 30px;
+  height: 30px;
+  position: absolute;
+  top: 0;
+  right: 15px;
+}
 .ship-card {
   display: flex;
   flex: 0 0 calc(50% - 8px);

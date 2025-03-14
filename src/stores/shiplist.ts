@@ -115,7 +115,13 @@ export const useShiplist = defineStore('shiplist', () => {
     shiplist.value = JSON.parse(shipsInLocalStorage)
     filteredShiplist.value = shiplist.value
   }
-  //
+  /*
+  * TODO:
+  *  1) Import with update current ships not override
+  *  2) Possibility to remove ship from phase
+  *  3) Display ship names
+  *  4) Dialog in filter can't close by clicking outside of frame
+  */
 
   // WATCHERS FOR SAVING DATA TO LOCALSTORAGE
   watch(
@@ -297,6 +303,50 @@ export const useShiplist = defineStore('shiplist', () => {
     lockMap.value[mapIndex].phases.splice(phaseIndex, 1)
   }
 
+  // Remove ship from phase
+  function removeShipFromPhase (phaseId: number, shipId:number) {
+    const mapIndex = lockMap.value
+      .findIndex(_map => _map.phases.findIndex(_phase => _phase.id === phaseId) !== -1)
+    if (mapIndex === -1) {
+      return
+    }
+    const phaseIndex = lockMap.value[mapIndex].phases
+      .findIndex(_phase => _phase.id === phaseId)
+    if (phaseIndex === -1) {
+      return
+    }
+    const shipIndex = lockMap.value[mapIndex].phases[phaseIndex]
+      .ships.findIndex(_ship => _ship.id === shipId)
+    if (shipIndex === -1) {
+      return
+    }
+    lockMap.value[mapIndex].phases[phaseIndex]
+      .ships.splice(shipIndex, 1)
+
+    if (checkIfRemovingShipNotInAnyOtherPhases(phaseId, shipId)) {
+      const shipTagIndex = shiplist.value
+        .findIndex(_ship => _ship.id === shipId)
+      if (shipTagIndex === -1) {
+        return
+      }
+      shiplist.value[shipTagIndex].tag = ''
+    }
+  }
+
+  function checkIfRemovingShipNotInAnyOtherPhases (phaseId:number, shipId:number) {
+    for (const map of lockMap.value) {
+      for (const p of map.phases) {
+        // Skip the deleted phase
+        if (p.id === phaseId) continue
+
+        if (p.ships.findIndex(_ship => _ship.id === shipId) !== -1) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+
   function setShipTag (uniqueId: number, tag: Tag): void {
     const index = shiplist.value.findIndex(ship => ship.uniqueId === uniqueId)
     shiplist.value[index].tag = tag
@@ -400,5 +450,6 @@ export const useShiplist = defineStore('shiplist', () => {
     applyFilter,
     doFilter,
     resetFilter,
+    removeShipFromPhase,
   }
 })

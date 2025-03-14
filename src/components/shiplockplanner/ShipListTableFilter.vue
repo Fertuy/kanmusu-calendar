@@ -24,7 +24,7 @@
 
 </script>
 <template>
-  <VDialog v-model="dialog" max-width="800px">
+  <VDialog v-model="dialog" max-width="800px" persistent>
     <template #activator="{ props: activatorProps }">
       <VBtn
         append-icon="mdi-filter"

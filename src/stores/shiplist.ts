@@ -3,7 +3,7 @@ import { Ref, watch } from 'vue'
 
 import rawdata from '@/assets/rawdata.json'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import rawshipaswdata from '@/assets/rawshipaswdata.json'
+// import rawshipaswdata from '@/assets/rawshipaswdata.json'
 import shipnames from '@/assets/shipnames.json'
 import shipnamesuffixes from '@/assets/shipnamesuffixes.json'
 
@@ -50,6 +50,7 @@ export const SHIP_TYPE = {
 export type FilterOptions = {
   tags: Array<number>,
   stype: Array<number>,
+  name: string,
   spf: boolean,
   landingEquip: number,
   midgetSub: boolean,
@@ -97,6 +98,7 @@ export const useShiplist = defineStore('shiplist', () => {
   const shipFilter: Ref<FilterOptions> = ref({
     tags: [],
     stype: [],
+    name: '',
     spf: false,
     landingEquip: 0,
     midgetSub: false,
@@ -206,7 +208,58 @@ export const useShiplist = defineStore('shiplist', () => {
   }
 
   function doFilter () {
+    const {
+      name, tags, stype,
+      landingEquip, spf, midgetSub
+      , exSlot,
+    } = shipFilter.value
+
+    filteredShiplist.value = shiplist.value.filter(ship => {
+      // Filter by name
+      const matchesName = !name || ship.name.toLowerCase().includes(name.toLowerCase())
+
+      // Filter by tags
+      const matchesTags = tags.length === 0 || (
+        typeof ship.tag === 'string' ? tags.includes(0) : tags.includes(ship.tag.id)
+      )
+
+      // Filter by stype
+      const matchesStype = stype.length === 0 || stype.includes(ship.stype)
+
+      // Filter by landing equipment
+      const matchesLandingEquip = landingEquip ===
+        LANDING_EQUIP_FILTER_OPTIONS.WHATEVER || (
+        landingEquip === LANDING_EQUIP_FILTER_OPTIONS.DLC ? ship.dlc
+          : landingEquip === LANDING_EQUIP_FILTER_OPTIONS.DLC_ONLY ? ship.dlc && !ship.tank
+            : landingEquip === LANDING_EQUIP_FILTER_OPTIONS.TANK ? ship.tank
+              : landingEquip === LANDING_EQUIP_FILTER_OPTIONS.TANK_ONLY ? ship.tank && !ship.dlc
+                : landingEquip === LANDING_EQUIP_FILTER_OPTIONS.EITHER ? ship.tank || ship.dlc
+                  : landingEquip === LANDING_EQUIP_FILTER_OPTIONS.NEITHER ? !ship.tank && !ship.dlc
+                    : true
+      )
+
+      // Filter by special flags
+      const matchesSpf = !spf || ship.spf
+      const matchesMidgetSub = !midgetSub || ship.midgetSub
+      const matchesExSlot = !exSlot || ship.exSlot
+
+      // Combine all conditions
+      return matchesName && matchesTags && matchesStype &&
+        matchesLandingEquip && matchesSpf && matchesMidgetSub &&
+        matchesExSlot
+    })
+  }
+
+  /*  function doFilter () {
     filteredShiplist.value = shiplist.value
+
+    if (shipFilter.value.name) {
+      filteredShiplist.value = filteredShiplist
+        .value.filter(ship =>
+          ship.name.toLowerCase().includes(
+            shipFilter.value.name.toLowerCase()
+          ))
+    }
 
     if (shipFilter.value.tags.length > 0) {
       filteredShiplist.value = filteredShiplist
@@ -247,7 +300,7 @@ export const useShiplist = defineStore('shiplist', () => {
     if (shipFilter.value.exSlot) {
       filteredShiplist.value = filteredShiplist.value.filter(ship => ship.exSlot)
     }
-  }
+  } */
 
   function applyFilter (_shipFilter:FilterOptions) {
     // Not readonly
@@ -263,6 +316,7 @@ export const useShiplist = defineStore('shiplist', () => {
     shipFilter.value = {
       tags: [],
       stype: [],
+      name: '',
       spf: false,
       landingEquip: 0,
       midgetSub: false,

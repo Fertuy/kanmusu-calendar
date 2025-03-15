@@ -16,6 +16,7 @@
     <VTextarea
       v-model="rawdata"
       placeholder="Put your data here..."
+      variant="outlined"
     />
     <VBtn append-icon="mdi-check" text="Import" @click="importList" />
   </VContainer>

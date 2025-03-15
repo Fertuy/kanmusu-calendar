@@ -37,6 +37,7 @@
     }
     return ''
   }
+
 </script>
 <template>
   <VCard
@@ -52,18 +53,19 @@
         <!--bg-deep-orange-accent-4    bg-green-darken-1-->
         <VImg :src="sImg" />
       </VAvatar>
-      <VSheet
+      <VAvatar
         v-if="ship.exSlot"
-        border="md"
-        class="exslot position-absolute  exslot-border bg-green-darken-1 rounded-circle overflow-hidden "
+        class="exslot position-absolute blue-lighten-2
+         rounded-circle overflow-hidden"
         height="24"
         rounded
+        size="24"
         width="24"
       >
         <VImg
           src="@/assets/icons/equipicons/exslot.png"
         />
-      </VSheet>
+      </VAvatar>
     </div>
     <div class="d-flex flex-column align-start flex-0-1-100 w-25">
       <div class="ship-name-wrapper">
@@ -111,10 +113,11 @@
       variant="text"
       @click="removeBtn(ship.id)"
     >
+      <!--        icon="mdi-close-circle-outline"-->
       <VIcon
         color="red"
-        icon="mdi-close-circle-outline"
-        size="30"
+        icon="mdi-share"
+        size="20"
       />
     </VBtn>
     <div
@@ -129,8 +132,8 @@
   lang="scss"
 >
 .remove {
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   position: absolute;
   top: 0;
   right: 15px;
@@ -165,7 +168,9 @@
 }
 
 .exslot {
-  box-shadow: 0 0 5px 2px greenyellow;
+  //box-shadow: 0 0 5px 2px greenyellow;
+  box-shadow: 0 0 5px 2px #64B5F6;
+  border: 2px solid rgba(0, 166, 255);
   bottom: 2px;
   left: 2px;
 }

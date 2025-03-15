@@ -2,6 +2,10 @@ import { defineStore } from 'pinia'
 import { Ref, watch } from 'vue'
 
 import rawdata from '@/assets/rawdata.json'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import rawshipaswdata from '@/assets/rawshipaswdata.json'
+import shipnames from '@/assets/shipnames.json'
+import shipnamesuffixes from '@/assets/shipnamesuffixes.json'
 
 const SPF = 45
 const DLC = 24
@@ -49,6 +53,7 @@ export type FilterOptions = {
   spf: boolean,
   landingEquip: number,
   midgetSub: boolean,
+  exSlot: boolean
 }
 
 export type Tag = {
@@ -59,6 +64,7 @@ export type Tag = {
 export type Kanmusu = {
   id: number,
   uniqueId: number,
+  name: string,
   level: number,
   stype: number,
   exSlot: boolean,
@@ -94,6 +100,7 @@ export const useShiplist = defineStore('shiplist', () => {
     spf: false,
     landingEquip: 0,
     midgetSub: false,
+    exSlot: false,
   })
 
   const shipData = rawdata.ship
@@ -115,13 +122,6 @@ export const useShiplist = defineStore('shiplist', () => {
     shiplist.value = JSON.parse(shipsInLocalStorage)
     filteredShiplist.value = shiplist.value
   }
-  /*
-  * TODO:
-  *  1) Import with update current ships not override
-  *  2) Possibility to remove ship from phase
-  *  3) Display ship names
-  *  4) Dialog in filter can't close by clicking outside of frame
-  */
 
   // WATCHERS FOR SAVING DATA TO LOCALSTORAGE
   watch(
@@ -164,14 +164,17 @@ export const useShiplist = defineStore('shiplist', () => {
       releaseExpand: boolean;
     }) => {
       const _stype = shipData[ship.id as unknown as keyof typeof shipData].api_stype
+      let _name = shipData[ship.id as unknown as keyof typeof shipData].api_name
       const _spf = isShipCanUseIt(SPF, ship.id, _stype)
       const _dlc = isShipCanUseIt(DLC, ship.id, _stype)
       const _tank = isShipCanUseIt(TANK, ship.id, _stype)
       const _midgetSub = isShipCanUseIt(MIDGEDSUB, ship.id, _stype)
+      _name = addShipSuffix(_name)
 
       return {
         id: ship.id,
         uniqueId: ship.uniqueId,
+        name: _name,
         level: ship.level,
         exSlot: ship.releaseExpand,
         stype: _stype,
@@ -183,6 +186,23 @@ export const useShiplist = defineStore('shiplist', () => {
       }
     })
     resetFilter()
+  }
+
+  function addShipSuffix (shipName: string):string {
+    // Create a regular expression pattern from the keys of the replacements object
+    const shipSuffixPattern = new RegExp(Object.keys(shipnamesuffixes).join('|'), 'g')
+
+    // Create a regular expression pattern from the keys of the replacements object
+    const shipNamePattern = new RegExp(Object.keys(shipnames).join('|'), 'g')
+
+    // Replace occurrences of the keys in the input string with their corresponding values
+    let transformedString = shipName
+      .replace(shipSuffixPattern, match => shipnamesuffixes[match as keyof typeof shipnamesuffixes])
+
+    transformedString = transformedString
+      .replace(shipNamePattern, match => shipnames[match as keyof typeof shipnames])
+
+    return transformedString
   }
 
   function doFilter () {
@@ -223,10 +243,19 @@ export const useShiplist = defineStore('shiplist', () => {
     if (shipFilter.value.midgetSub) {
       filteredShiplist.value = filteredShiplist.value.filter(ship => ship.midgetSub)
     }
+
+    if (shipFilter.value.exSlot) {
+      filteredShiplist.value = filteredShiplist.value.filter(ship => ship.exSlot)
+    }
   }
 
   function applyFilter (_shipFilter:FilterOptions) {
-    shipFilter.value = _shipFilter
+    // Not readonly
+    // shipFilter.value = _shipFilter
+    //
+    // readonly!!!
+    shipFilter.value = JSON.parse(JSON.stringify(_shipFilter))
+
     doFilter()
   }
 
@@ -237,6 +266,7 @@ export const useShiplist = defineStore('shiplist', () => {
       spf: false,
       landingEquip: 0,
       midgetSub: false,
+      exSlot: false,
     }
     doFilter()
   }
@@ -305,6 +335,7 @@ export const useShiplist = defineStore('shiplist', () => {
 
   // Remove ship from phase
   function removeShipFromPhase (phaseId: number, shipId:number) {
+    console.log(shipFilter.value)
     const mapIndex = lockMap.value
       .findIndex(_map => _map.phases.findIndex(_phase => _phase.id === phaseId) !== -1)
     if (mapIndex === -1) {
@@ -433,6 +464,9 @@ export const useShiplist = defineStore('shiplist', () => {
     }
   }
 
+  function getFilterOptions () {
+    return JSON.stringify(shipFilter.value)
+  }
   return {
     lockMap,
     shiplist,
@@ -451,5 +485,6 @@ export const useShiplist = defineStore('shiplist', () => {
     doFilter,
     resetFilter,
     removeShipFromPhase,
+    getFilterOptions,
   }
 })

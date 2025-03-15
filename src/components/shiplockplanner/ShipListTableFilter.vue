@@ -11,7 +11,7 @@
   const aFilter = shipList.applyFilter
   const rFilter = shipList.resetFilter
   const dialog = ref(false)
-  const filterOptions: Ref<FilterOptions> = computed(() => shipList.shipFilter)
+  const filterOptions: Ref<FilterOptions> = ref(JSON.parse(shipList.getFilterOptions()))
 
   function applyFilter () {
     aFilter(filterOptions.value)
@@ -19,9 +19,13 @@
   }
   function resetFilter () {
     rFilter()
+    filterOptions.value = JSON.parse(shipList.getFilterOptions())
     dialog.value = false
   }
-
+  function closeDialog () {
+    filterOptions.value = JSON.parse(shipList.getFilterOptions())
+    dialog.value = false
+  }
 </script>
 <template>
   <VDialog v-model="dialog" max-width="800px" persistent>
@@ -56,7 +60,7 @@
         <VBtn
           text="Close"
           variant="text"
-          @click="dialog = false"
+          @click="closeDialog"
         />
       </VCardActions>
       <!--TAG FILTER SECTION-->
@@ -153,6 +157,7 @@
         <div class="d-flex flex-wrap ml-4">
           <VCheckbox v-model="filterOptions.spf" label="SPF" :value="true" />
           <VCheckbox v-model="filterOptions.midgetSub" label="Midget Submarine" :value="true" />
+          <VCheckbox v-model="filterOptions.exSlot" label="Ex slot open" :value="true" />
         </div>
       </VContainer>
       <!-- template

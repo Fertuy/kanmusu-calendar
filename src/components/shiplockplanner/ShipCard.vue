@@ -4,6 +4,7 @@
 >
   import { Kanmusu, useShiplist } from '@/stores/shiplist'
   import { PropType } from 'vue'
+
   const imgUrls = import.meta.glob('@/assets/icons/shiplock/*.png', {
     import: 'default',
     eager: true,
@@ -30,13 +31,12 @@
 
   setImg(props.ship)
 
-  function setImg (ship:Kanmusu) {
+  function setImg (ship: Kanmusu) {
     if (imgUrls.hasOwnProperty(`/src/assets/icons/shiplock/${ship.id}.png`)) {
       sImg.value = imgUrls[`/src/assets/icons/shiplock/${ship.id}.png`]
     }
     return ''
   }
-
 </script>
 <template>
   <VCard
@@ -44,17 +44,34 @@
     draggable="true"
     @dragstart="onDragStart($event,ship as any)"
   >
-    <VAvatar
-      rounded
-      size="86"
-    >
-      <!--      <VImg :src="`@/assets/icons/shiplock/${props.ship.id}.png`" />-->
-      <VImg :src="sImg" />
-    </VAvatar>
-    <div class="d-flex flex-column align-start">
+    <div class="position-relative">
+      <VAvatar
+        size="86"
+      >
+        <!--      <VImg :src="`@/assets/icons/shiplock/${props.ship.id}.png`" />-->
+        <!--bg-deep-orange-accent-4    bg-green-darken-1-->
+        <VImg :src="sImg" />
+      </VAvatar>
+      <VSheet
+        v-if="ship.exSlot"
+        border="md"
+        class="exslot position-absolute  exslot-border bg-green-darken-1 rounded-circle overflow-hidden "
+        height="24"
+        rounded
+        width="24"
+      >
+        <VImg
+          src="@/assets/icons/equipicons/exslot.png"
+        />
+      </VSheet>
+    </div>
+    <div class="d-flex flex-column align-start flex-0-1-100 w-25">
+      <div class="ship-name-wrapper">
+        <VCardTitle class="pa-0 pl-2 ship-name">{{ ship.name }}</VCardTitle>
+      </div>
       <div class="d-flex">
-        <VCardTitle class="pa-0 pl-2">{{ showShipType(ship.stype) }}</VCardTitle>
-        <VCardTitle class="pa-0 pl-2">Lvl: {{ ship.level }}</VCardTitle>
+        <VCardSubtitle class="pa-0 pl-2">{{ showShipType(ship.stype) }}</VCardSubtitle>
+        <VCardSubtitle class="pa-0 pl-2">Lvl: {{ ship.level }}</VCardSubtitle>
       </div>
       <div class="d-flex align-start">
         <VImg
@@ -94,7 +111,11 @@
       variant="text"
       @click="removeBtn(ship.id)"
     >
-      <VIcon color="red" icon="mdi-close-circle-outline" size="30" />
+      <VIcon
+        color="red"
+        icon="mdi-close-circle-outline"
+        size="30"
+      />
     </VBtn>
     <div
       class="tag"
@@ -114,6 +135,7 @@
   top: 0;
   right: 15px;
 }
+
 .ship-card {
   display: flex;
   flex: 0 0 calc(50% - 8px);
@@ -122,12 +144,30 @@
   overflow: hidden;
 }
 
+.ship-name-wrapper {
+  max-width: 100%;
+}
+
+.ship-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 0 0 100%;
+  padding-right: 40px !important;
+}
+
 .tag {
   width: 15px;
   height: 100%;
   position: absolute;
   top: 0;
   right: 0;
+}
+
+.exslot {
+  box-shadow: 0 0 5px 2px greenyellow;
+  bottom: 2px;
+  left: 2px;
 }
 
 .tag-color {

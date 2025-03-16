@@ -13,10 +13,10 @@
     "core-js": "^3.39.0",
     "dayjs": "^1.11.13",
     "roboto-fontface": "*",
-    "vite-plugin-vue-layouts-next": "^0.0.4",
+    "vite-plugin-vue-layouts-next": "^0.0.6",
     "vue": "^3.5.12",
     "vue-draggable-plus": "^0.6.0",
-    "vuetify": "^3.7.6"
+    "vuetify": "^3.7.16"
   },
   "devDependencies": {
     "@babel/types": "^7.26.3",

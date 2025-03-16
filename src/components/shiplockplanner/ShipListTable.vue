@@ -40,11 +40,11 @@
 
 </script>
 <template>
-  <VContainer class="w-auto d-flex flex-wrap">
+  <VContainer class="w-auto d-flex flex-wrap position-sticky top-0">
     <ShipListTableFilter />
     <VInfiniteScroll
       v-if="displayedShipList.length > 0"
-      class="w-100"
+      class="w-100 ship-list"
       direction="vertical"
       :items="displayedShipList"
       @load="loadMoreShips"
@@ -65,5 +65,9 @@
 <style scoped lang="scss">
 .content {
   flex-grow: 1;
+}
+
+.ship-list {
+  height: 70vh!important;
 }
 </style>

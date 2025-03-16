@@ -199,6 +199,7 @@ export const useShiplist = defineStore('shiplist', () => {
   if (shipsInLocalStorage) {
     shiplist.value = JSON.parse(shipsInLocalStorage)
     filteredShiplist.value = shiplist.value
+    doFilter()
   }
 
   // WATCHERS FOR SAVING DATA TO LOCALSTORAGE
@@ -250,6 +251,10 @@ export const useShiplist = defineStore('shiplist', () => {
           ship.level / 99.0) + ship.mod[stat.modIndex]
     }
     return 0
+  }
+
+  function sortList () {
+    filteredShiplist.value.sort((a, b) => b.level - a.level)
   }
 
   // Import ship list from noro6 Aerial combat simulator
@@ -352,59 +357,9 @@ export const useShiplist = defineStore('shiplist', () => {
         matchesLandingEquip && matchesSpf && matchesMidgetSub &&
         matchesExSlot
     })
+
+    sortList()
   }
-
-  /*  function doFilter () {
-    filteredShiplist.value = shiplist.value
-
-    if (shipFilter.value.name) {
-      filteredShiplist.value = filteredShiplist
-        .value.filter(ship =>
-          ship.name.toLowerCase().includes(
-            shipFilter.value.name.toLowerCase()
-          ))
-    }
-
-    if (shipFilter.value.tags.length > 0) {
-      filteredShiplist.value = filteredShiplist
-        .value.filter(ship => {
-          if (typeof ship.tag !== 'string') {
-            return shipFilter.value.tags.includes(ship.tag.id)
-          } else return shipFilter.value.tags.includes(0)
-        })
-    }
-
-    if (shipFilter.value.stype.length > 0) {
-      filteredShiplist.value = filteredShiplist.value
-        .filter(ship => shipFilter.value.stype.includes(ship.stype))
-    }
-
-    if (shipFilter.value.landingEquip > -1) {
-      filteredShiplist.value = filteredShiplist.value.filter(ship => {
-        switch (shipFilter.value.landingEquip) {
-          case LANDING_EQUIP_FILTER_OPTIONS.DLC: return ship.dlc
-          case LANDING_EQUIP_FILTER_OPTIONS.DLC_ONLY: return ship.dlc && !ship.tank
-          case LANDING_EQUIP_FILTER_OPTIONS.TANK: return ship.tank
-          case LANDING_EQUIP_FILTER_OPTIONS.TANK_ONLY: return ship.tank && !ship.dlc
-          case LANDING_EQUIP_FILTER_OPTIONS.EITHER: return ship.tank || ship.dlc
-          case LANDING_EQUIP_FILTER_OPTIONS.NEITHER: return !ship.tank && !ship.dlc
-          default: return true
-        }
-      })
-    }
-
-    if (shipFilter.value.spf) {
-      filteredShiplist.value = filteredShiplist.value.filter(ship => ship.spf)
-    }
-
-    if (shipFilter.value.midgetSub) {
-      filteredShiplist.value = filteredShiplist.value.filter(ship => ship.midgetSub)
-    }
-
-    if (shipFilter.value.exSlot) {
-      filteredShiplist.value = filteredShiplist.value.filter(ship => ship.exSlot)
-    }
-  } */
 
   function applyFilter (_shipFilter:FilterOptions) {
     // Not readonly

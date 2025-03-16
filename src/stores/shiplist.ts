@@ -2,8 +2,7 @@ import { defineStore } from 'pinia'
 import { Ref, watch } from 'vue'
 
 import rawdata from '@/assets/rawdata.json'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// import rawshipaswdata from '@/assets/rawshipaswdata.json'
+import rawshipaswdata from '@/assets/rawshipaswdata.json'
 import shipnames from '@/assets/shipnames.json'
 import shipnamesuffixes from '@/assets/shipnamesuffixes.json'
 
@@ -47,6 +46,75 @@ export const SHIP_TYPE = {
   AO: 22,
 }
 
+type ShipStatData = {
+  name:string,
+  modIndex:number,
+}
+
+const SHIP_STAT: {[key:string]:ShipStatData} = {
+  FP: {
+    name: 'api_houg',
+    modIndex: 0,
+  },
+  TORP: {
+    name: 'api_raig',
+    modIndex: 1,
+  },
+  AA: {
+    name: 'api_tyku',
+    modIndex: 2,
+  },
+  ARMOR: {
+    name: 'api_souk',
+    modIndex: 3,
+  },
+  LUCK: {
+    name: 'api_luck',
+    modIndex: 4,
+  },
+  ASW: {
+    name: '~',
+    modIndex: 6,
+  },
+}
+
+type ImportShipData = {
+  rosterId:number,
+  masterId:number,
+  level:number,
+  exp: [],
+  hp: [],
+  afterHp:[],
+  fp:[],
+  tp:[],
+  aa:[],
+  ar:[],
+  ev:[],
+  as:[],
+  ls:[],
+  lk:[],
+  range:number,
+  items:[],
+  ex_item:number,
+  slots:[],
+  slotnum:number,
+  speed:number,
+  mod:[],
+  spitems:[],
+  fuel:number,
+  ammo:number,
+  repair:[],
+  stars:number,
+  morale:number,
+  cond:number,
+  lock:number,
+  sally: number,
+  akashiMark: number,
+  preExpedCond: [],
+  pendingConsumption: {},
+  lastSortie: [],
+}
+
 export type FilterOptions = {
   tags: Array<number>,
   stype: Array<number>,
@@ -62,6 +130,7 @@ export type Tag = {
   name: string,
   color: string
 }
+
 export type Kanmusu = {
   id: number,
   uniqueId: number,
@@ -74,7 +143,14 @@ export type Kanmusu = {
   dlc: boolean,
   tank: boolean,
   tag: Tag | string,
+  fp: number,
+  aa: number,
+  armor: number,
+  torp: number,
+  luck: number,
+  asw: number,
 }
+
 export type Phase = {
   id: number
   name: string,
@@ -157,34 +233,62 @@ export const useShiplist = defineStore('shiplist', () => {
       .api_equip_type[itemId as unknown as keyof typeof rawStype] === 1
   }
 
+  function getBaseStat (stat:ShipStatData, ship:ImportShipData): number {
+    const _rawShip = shipData[ship.masterId as unknown as keyof typeof shipData]
+    const _rawStat = _rawShip[stat.name as unknown as keyof typeof _rawShip]
+    if (Array.isArray(_rawStat)) {
+      return Number.parseInt(ship.mod[stat.modIndex] + _rawStat[0])
+    }
+    return 0
+  }
+
+  function getAswStat (stat:ShipStatData, ship: ImportShipData):number {
+    const shipFromRawShipAswData = rawshipaswdata.find(_ship => _ship.id === ship.masterId)
+    if (shipFromRawShipAswData) {
+      return shipFromRawShipAswData.min_asw +
+        Math.floor((shipFromRawShipAswData.asw - shipFromRawShipAswData.min_asw) *
+          ship.level / 99.0) + ship.mod[stat.modIndex]
+    }
+    return 0
+  }
+
   // Import ship list from noro6 Aerial combat simulator
   function importShiplist (rawShiplist: string) {
-    shiplist.value = JSON.parse(rawShiplist).map((ship: {
-      id: number;
-      uniqueId: number;
-      level: number;
-      releaseExpand: boolean;
-    }) => {
-      const _stype = shipData[ship.id as unknown as keyof typeof shipData].api_stype
-      let _name = shipData[ship.id as unknown as keyof typeof shipData].api_name
-      const _spf = isShipCanUseIt(SPF, ship.id, _stype)
-      const _dlc = isShipCanUseIt(DLC, ship.id, _stype)
-      const _tank = isShipCanUseIt(TANK, ship.id, _stype)
-      const _midgetSub = isShipCanUseIt(MIDGEDSUB, ship.id, _stype)
+    const shList:Array<ImportShipData> = Object.values(JSON.parse(rawShiplist))
+
+    shiplist.value = shList.map(ship => {
+      const _stype = shipData[ship.masterId as unknown as keyof typeof shipData].api_stype
+      let _name = shipData[ship.masterId as unknown as keyof typeof shipData].api_name
+      const _spf = isShipCanUseIt(SPF, ship.masterId, _stype)
+      const _dlc = isShipCanUseIt(DLC, ship.masterId, _stype)
+      const _tank = isShipCanUseIt(TANK, ship.masterId, _stype)
+      const _midgetSub = isShipCanUseIt(MIDGEDSUB, ship.masterId, _stype)
+      const _fp = getBaseStat(SHIP_STAT.FP, ship)
+      const _torp = getBaseStat(SHIP_STAT.TORP, ship)
+      const _armor = getBaseStat(SHIP_STAT.ARMOR, ship)
+      const _aa = getBaseStat(SHIP_STAT.AA, ship)
+      const _luck = getBaseStat(SHIP_STAT.LUCK, ship)
+      const _asw = getAswStat(SHIP_STAT.ASW, ship)
       _name = addShipSuffix(_name)
 
       return {
-        id: ship.id,
-        uniqueId: ship.uniqueId,
+        id: ship.masterId,
+        uniqueId: ship.rosterId,
         name: _name,
         level: ship.level,
-        exSlot: ship.releaseExpand,
         stype: _stype,
         spf: _spf,
         midgetSub: _midgetSub,
         dlc: _dlc,
         tank: _tank,
+        exSlot: ship.ex_item !== 0,
         tag: '',
+        fp: _fp,
+        torp: _torp,
+        asw: _asw,
+        aa: _aa,
+        armor: _armor,
+        luck: _luck,
       }
     })
     resetFilter()

@@ -68,6 +68,6 @@
 }
 
 .ship-list {
-  height: 70vh!important;
+  max-height: 70vh!important;
 }
 </style>

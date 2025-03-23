@@ -6,6 +6,8 @@
   import { storeToRefs } from 'pinia'
   import { PropType } from 'vue'
 
+  const isHidden = ref(false)
+
   const props = defineProps({
     phase: { type: Object as PropType<Phase>, required: true },
   })
@@ -65,9 +67,9 @@
 
 </script>
 <template>
-  <VCard class="phase-item">
+  <VCard class="phase-item" :class="{hide:isHidden}">
     <VToolbar
-      :class="{edit:isEditing}"
+      :class="{edit:isEditing,hide:isHidden}"
       density="compact"
       :extended="isEditing||localPhase.description!==''"
       extension-height="auto"
@@ -161,6 +163,12 @@
         </div>
       </template>
       <VSpacer />
+      <VBtn v-if="!isHidden" icon @click="isHidden = !isHidden">
+        <VIcon>mdi-chevron-down</VIcon>
+      </VBtn>
+      <VBtn v-else icon @click="isHidden = !isHidden">
+        <VIcon>mdi-chevron-up</VIcon>
+      </VBtn>
       <VBtn
         v-if="isEditing===false"
         icon
@@ -247,6 +255,11 @@
 
 .save {
   color: lightgreen;
+}
+
+.hide {
+  max-height: 48px !important;
+  overflow: hidden;
 }
 
 </style>

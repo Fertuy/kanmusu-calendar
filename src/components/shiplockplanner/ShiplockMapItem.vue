@@ -6,6 +6,8 @@
   import ShiplockPhaseTable from '@/components/shiplockplanner/ShiplockPhaseTable.vue'
   import { PropType } from 'vue'
 
+  const isHidden = ref(false)
+
   const props = defineProps({
     map: { type: Object as PropType<LockMap>, required: true },
   })
@@ -23,8 +25,8 @@
   }
 </script>
 <template>
-  <VCard class="map-card" variant="outlined">
-    <VToolbar density="compact">
+  <VCard class="map-border" :class="{hide:isHidden, mapCard:!isHidden}" variant="outlined">
+    <VToolbar :class="{hide:isHidden}" density="compact">
       <VToolbarTitle v-if="isEditing===false">{{ map?.name }}</VToolbarTitle>
       <VTextField
         v-else
@@ -33,6 +35,12 @@
         hide-details
       />
       <VSpacer />
+      <VBtn v-if="!isHidden" icon @click="isHidden = !isHidden">
+        <VIcon>mdi-chevron-down</VIcon>
+      </VBtn>
+      <VBtn v-else icon @click="isHidden = !isHidden">
+        <VIcon>mdi-chevron-up</VIcon>
+      </VBtn>
       <VBtn v-if="isEditing===false" icon @click="isEditing=!isEditing">
         <VIcon>mdi-pencil</VIcon>
       </VBtn>
@@ -70,9 +78,12 @@
   scoped
   lang="scss"
 >
+.map-border{
+  border-color: #424242;
+}
+
 .map-card {
   min-height: 150px;
-  border-color: #424242;
 }
 .map-content {
   display: flex;
@@ -85,5 +96,10 @@
 }
 .save {
   color: lightgreen;
+}
+
+.hide {
+  max-height: 48px !important;
+  overflow: hidden;
 }
 </style>
